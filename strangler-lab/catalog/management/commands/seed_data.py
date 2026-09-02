@@ -15,6 +15,7 @@ from django.conf import settings
 from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from django.core.management.base import BaseCommand
 from django.db import transaction
 from django.utils import timezone
@@ -84,6 +85,7 @@ class Command(BaseCommand):
         self.seed_users()
         categories = self.seed_categories()
         products = self.seed_products(categories)
+        self.repair_missing_media()
         self.seed_orders(products)
 
         elapsed = (timezone.now() - started).total_seconds()
@@ -205,6 +207,35 @@ class Command(BaseCommand):
 
         self.stdout.write(self.style.SUCCESS("Products seeded."))
         return list(Product.objects.values_list("id", "price"))
+
+    # -- media repair -----------------------------------------------------------
+
+    def repair_missing_media(self):
+        """
+        MEDIA_ROOT isn't persisted across container recreation (see
+        catalog.models.Product.image / MEDIA_ROOT). That means a
+        product row can end up pointing at an image path that no
+        longer has a file behind it, independent of whether the product
+        *rows* still satisfy the row-count idempotency check in
+        seed_products(). This repairs just the missing files - it never
+        touches a database row, only rewrites bytes at paths the DB
+        already references.
+        """
+        products = list(Product.objects.exclude(image="").only("id", "image"))
+        missing = [p for p in products if not default_storage.exists(p.image.name)]
+
+        if not missing:
+            self.stdout.write("All product image files present, nothing to repair.")
+            return
+
+        self.stdout.write(f"Repairing {len(missing)} missing product image file(s)...")
+        placeholder_images = _build_placeholder_images()
+
+        for product in missing:
+            image_bytes = placeholder_images[product.id % len(placeholder_images)]
+            default_storage.save(product.image.name, ContentFile(image_bytes))
+
+        self.stdout.write(self.style.SUCCESS(f"Repaired {len(missing)} image file(s); no rows changed."))
 
     # -- orders / order items / payments -----------------------------------------------------------
 
