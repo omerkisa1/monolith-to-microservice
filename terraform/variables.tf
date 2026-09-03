@@ -1,0 +1,9 @@
+variable "portvmind_access_key" { type = string }
+variable "portvmind_secret_access_key" { type = string }
+variable "tenant_id" { type = string }
+varible "ubuntu_image_id" { type = string }
+varible "external_network_id" { type = string }
+variable "medium_flavor_id" { type = string }
+variable "nano_flavor_id" { type = string }
+variable "admin_cidr" { type = string }
+variable "private_network_cidr" { type = string }
