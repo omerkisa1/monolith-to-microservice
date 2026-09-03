@@ -3,11 +3,12 @@ from django.conf import settings
 from django.conf.urls.static import static
 from django.urls import include, path
 
-from config.views import health
+from config.views import health, metrics
 
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("health/", health, name="health"),
+    path("metrics/", metrics, name="metrics"),
     path("", include("catalog.urls")),
     path("cart/", include("cart.urls")),
     path("orders/", include("orders.urls")),

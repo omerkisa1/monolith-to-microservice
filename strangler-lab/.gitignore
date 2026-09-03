@@ -12,5 +12,6 @@ logs/
 db.sqlite3
 .DS_Store
 *.log
+.env
 
 FACILITATOR-PRIVATE.md
