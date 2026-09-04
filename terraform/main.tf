@@ -37,7 +37,7 @@ module "compute" {
   ingress_http_nodeport  = var.ingress_http_nodeport
   ingress_https_nodeport = var.ingress_https_nodeport
 
-  management_network_id = module.network.management_network_id
+  management_network_id = module.network.bastion_network_id
   rke2_network_id       = module.network.rke2_network_id
   rke2_subnet_id        = module.network.rke2_subnet_id
   data_network_id       = module.network.data_network_id

@@ -39,7 +39,7 @@ resource "openstack_lb_member_v2" "http_members" {
 
   protocol_port = var.ingress_http_nodeport
 
-  subnet_id = openstack_networking_subnet_v2.rke2_subnet.id
+  subnet_id = var.rke2_subnet_id
 }
 
 resource "openstack_lb_listener_v2" "https_listener" {
@@ -73,7 +73,7 @@ resource "openstack_lb_member_v2" "https_members" {
   pool_id       = openstack_lb_pool_v2.https_pool.id
   address       = openstack_compute_instance_v2.worker[count.index].access_ip_v4
   protocol_port = var.ingress_https_nodeport
-  subnet_id     = openstack_networking_subnet_v2.rke2_subnet.id
+  subnet_id     = var.rke2_subnet_id
 }
 
 

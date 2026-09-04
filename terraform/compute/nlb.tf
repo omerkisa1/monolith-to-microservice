@@ -41,7 +41,7 @@ resource "openstack_lb_member_v2" "k8s_api_members" {
   address = openstack_compute_instance_v2.master[count.index].access_ip_v4
 
   protocol_port = 6443
-  subnet_id     = openstack_networking_subnet_v2.rke2_subnet.id
+  subnet_id     = var.rke2_subnet_id
 }
 
 
@@ -77,7 +77,7 @@ resource "openstack_lb_member_v2" "rke2_join_members" {
 
   address       = openstack_compute_instance_v2.master[count.index].access_ip_v4
   protocol_port = 9345
-  subnet_id     = openstack_networking_subnet_v2.rke2_subnet.id
+  subnet_id     = var.rke2_subnet_id
 }
 
 output "rke2_nlb_private_vip" {

@@ -8,10 +8,9 @@ terraform {
 }
 
 provider "openstack" {
-  auth_url    = "https://tr-ist-01-apigw.portvmind.com/v3"
-  user_name   = var.portvmind_access_key
-  password    = var.portvmind_secret_access_key
-  tenant_id   = var.tenant_id
-  domain_name = "Default"
-  region      = "tr-ist-01"
+  auth_url = "https://tr-ist-01-apigw.portvmind.com/v3"
+  region   = "tr-ist-01"
+
+  application_credential_id     = var.portvmind_access_key
+  application_credential_secret = var.portvmind_secret_access_key
 }
