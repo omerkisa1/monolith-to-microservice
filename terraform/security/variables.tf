@@ -2,7 +2,7 @@ variable "admin_cidr" {
   type = string
 }
 
-variable "management_network_cidr" {
+variable "bastion_network_cidr" {
   type = string
 }
 

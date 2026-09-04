@@ -14,7 +14,7 @@ resource "openstack_compute_instance_v2" "bastion" {
   }
 
   network {
-    uuid = var.management_network_id
+    uuid = var.bastion_network_id
   }
 }
 

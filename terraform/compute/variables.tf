@@ -26,10 +26,6 @@ variable "ingress_https_nodeport" {
   type = number
 }
 
-variable "management_network_id" {
-  type = string
-}
-
 variable "rke2_network_id" {
   type = string
 }
@@ -71,5 +67,9 @@ variable "worker_sg_name" {
 }
 
 variable "db_sg_name" {
+  type = string
+}
+
+variable "bastion_network_id" {
   type = string
 }

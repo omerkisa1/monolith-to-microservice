@@ -10,7 +10,7 @@ variable "private_network_cidr" { type = string }
 variable "bastion_public_key_path" { type = string }
 variable "rke2_public_key_path" { type = string }
 variable "db_public_key_path" { type = string }
-variable "management_network_cidr" { type = string }
+variable "bastion_network_cidr" { type = string }
 variable "rke2_network_cidr" { type = string }
 variable "data_network_cidr" { type = string }
 
