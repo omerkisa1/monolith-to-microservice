@@ -7,3 +7,23 @@ variable "medium_flavor_id" { type = string }
 variable "nano_flavor_id" { type = string }
 variable "admin_cidr" { type = string }
 variable "private_network_cidr" { type = string }
+
+variable "master_count" {
+  type    = number
+  default = 3
+}
+
+variable "worker_count" {
+  type    = number
+  default = 2
+}
+
+variable "ingress_http_nodeport" {
+  type    = number
+  default = 30080
+}
+
+variable "ingress_https_nodeport" {
+  type    = number
+  default = 30443
+}
