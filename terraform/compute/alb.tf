@@ -1,6 +1,6 @@
 resource "openstack_lb_loadbalancer_v2" "application_lb" {
   name          = "application-lb"
-  vip_subnet_id = openstack_networking_subnet_v2.rke2_subnet.id
+  vip_subnet_id = var.rke2_subnet_id
 }
 
 
@@ -78,7 +78,7 @@ resource "openstack_lb_member_v2" "https_members" {
 
 
 resource "openstack_networking_floatingip_v2" "application_fip" {
-  pool = data.openstack_networking_network_v2.public_network.name
+  pool = var.external_network_name
 }
 
 resource "openstack_networking_floatingip_associate_v2" "application_fip_attach" {

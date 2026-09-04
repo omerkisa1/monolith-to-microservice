@@ -1,8 +1,8 @@
 resource "openstack_compute_instance_v2" "bastion" {
   name            = "bastion"
   flavor_id       = var.nano_flavor_id
-  key_pair        = openstack_compute_keypair_v2.bastion.name
-  security_groups = [openstack_networking_secgroup_v2.bastion_sg.name]
+  key_pair        = var.bastion_keypair_name
+  security_groups = [var.bastion_sg_name]
 
   block_device {
     uuid                  = var.ubuntu_image_id
@@ -14,12 +14,12 @@ resource "openstack_compute_instance_v2" "bastion" {
   }
 
   network {
-    uuid = openstack_networking_network_v2.bastion_network.id
+    uuid = var.management_network_id
   }
 }
 
 resource "openstack_networking_floatingip_v2" "bastion_floatingip" {
-  pool = data.openstack_networking_network_v2.public_network.name
+  pool = var.external_network_name
 }
 
 resource "openstack_compute_floatingip_associate_v2" "bastion_floatingip_attach" {

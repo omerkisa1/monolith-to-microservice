@@ -1,12 +1,8 @@
 resource "openstack_compute_instance_v2" "database" {
-  name      = "postgres-db"
-  flavor_id = var.medium_flavor_id
-
-  key_pair = openstack_compute_keypair_v2.db.name
-
-  security_groups = [
-    openstack_networking_secgroup_v2.db_sg.name
-  ]
+  name            = "postgres-db"
+  flavor_id       = var.medium_flavor_id
+  key_pair        = var.db_keypair_name
+  security_groups = [var.db_sg_name]
 
   block_device {
     uuid             = var.ubuntu_image_id
@@ -20,6 +16,6 @@ resource "openstack_compute_instance_v2" "database" {
   }
 
   network {
-    uuid = openstack_networking_network_v2.data_network.id
+    uuid = var.data_network_id
   }
 }

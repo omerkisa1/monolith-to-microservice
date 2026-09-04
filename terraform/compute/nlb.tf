@@ -1,7 +1,7 @@
 resource "openstack_lb_loadbalancer_v2" "rke2_nlb" {
   name = "rke2-controlplane-nlb"
 
-  vip_subnet_id = openstack_networking_subnet_v2.rke2_subnet.id
+  vip_subnet_id = var.rke2_subnet_id
 }
 
 

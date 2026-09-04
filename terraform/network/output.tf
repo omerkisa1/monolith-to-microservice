@@ -1,5 +1,5 @@
-output "management_network_id" {
-  value = openstack_networking_network_v2.management_network.id
+output "bastion_network_id" {
+  value = openstack_networking_network_v2.bastion_network.id
 }
 
 output "rke2_network_id" {

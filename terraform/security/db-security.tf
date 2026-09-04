@@ -6,7 +6,7 @@ resource "openstack_compute_secgroup_v2" "db_sg" {
     from_port     = 5432
     to_port       = 5432
     ip_protocol   = "tcp"
-    from_group_id = openstack_compute_secgroup_v2.rke2_worker_sg.id
+    from_group_id = openstack_compute_secgroup_v2.worker_sg.id
   }
 
   rule {

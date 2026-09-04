@@ -3,8 +3,8 @@ resource "openstack_compute_instance_v2" "master" {
 
   name            = "rke2-master-${count.index + 1}"
   flavor_id       = var.medium_flavor_id
-  key_pair        = openstack_compute_keypair_v2.rke2.name
-  security_groups = [openstack_networking_secgroup_v2.rke2_secgroup.name]
+  key_pair        = var.rke2_keypair_name
+  security_groups = [var.master_sg_name]
 
   block_device {
     uuid                  = var.ubuntu_image_id
@@ -16,6 +16,6 @@ resource "openstack_compute_instance_v2" "master" {
   }
 
   network {
-    uuid = openstack_networking_network_v2.rke2_network.id
+    uuid = var.rke2_network_id
   }
 }
