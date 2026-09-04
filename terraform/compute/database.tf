@@ -9,11 +9,10 @@ resource "openstack_compute_instance_v2" "database" {
   ]
 
   block_device {
-    uuid                  = var.ubuntu_image_id
-    source_type           = "image"
-    destination_type      = "volume"
+    uuid             = var.ubuntu_image_id
+    source_type      = "image"
+    destination_type = "volume"
 
-    # İşletim sistemi diski
     volume_size = 20
 
     boot_index            = 0
