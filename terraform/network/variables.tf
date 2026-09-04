@@ -2,7 +2,7 @@ variable "external_network_id" {
   type = string
 }
 
-variable "management_network_cidr" {
+variable "bastion_network_cidr" {
   type = string
 }
 
