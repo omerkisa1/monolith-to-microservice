@@ -1,5 +1,5 @@
 from django.conf import settings
-from django.db import transaction
+from django.db import IntegrityError, transaction
 
 from cart.services import release_all_reservations
 from catalog.models import Product
@@ -14,6 +14,12 @@ class CheckoutError(Exception):
 
 class EmptyCart(CheckoutError):
     pass
+
+
+class DuplicateOrder(CheckoutError):
+    def __init__(self, order):
+        self.order = order
+        super().__init__(f"Order {order.id} was already placed for this checkout")
 
 
 class OutOfStock(CheckoutError):
@@ -38,22 +44,35 @@ def _append_order_log(order, payment):
 
 
 @transaction.atomic
-def checkout(request, user, cart_items, shipping_address, payment_method):
+def checkout(request, user, cart_items, shipping_address, payment_method, idempotency_key=None):
     """
     The one transaction the whole store's data integrity rests on: stock,
     order, order items and payment all move together or not at all.
+
+    idempotency_key is the duplicate-order guard: a unique key generated when
+    the checkout page is rendered and re-sent with the POST. If two POSTs race
+    with the same key, the unique index lets exactly one create the order and
+    the loser is answered with DuplicateOrder pointing at the winner's order.
     """
     if not cart_items:
         raise EmptyCart()
 
     total = sum((item["subtotal"] for item in cart_items), start=0)
 
-    order = Order.objects.create(
-        user=user,
-        status="pending",
-        total=total,
-        shipping_address=shipping_address,
-    )
+    try:
+        with transaction.atomic():
+            order = Order.objects.create(
+                user=user,
+                status="pending",
+                total=total,
+                shipping_address=shipping_address,
+                idempotency_key=idempotency_key,
+            )
+    except IntegrityError:
+        if not idempotency_key:
+            raise
+        existing = Order.objects.get(idempotency_key=idempotency_key)
+        raise DuplicateOrder(existing)
 
     for item in cart_items:
         product = Product.objects.select_for_update().get(pk=item["product"].id)

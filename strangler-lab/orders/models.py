@@ -18,6 +18,7 @@ class Order(models.Model):
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default="pending")
     total = models.DecimalField(max_digits=12, decimal_places=2)
     shipping_address = models.CharField(max_length=255)
+    idempotency_key = models.CharField(max_length=64, unique=True, null=True, blank=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 

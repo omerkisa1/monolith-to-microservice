@@ -1,3 +1,5 @@
+import uuid
+
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect, render
@@ -12,6 +14,7 @@ from .models import Order
 def checkout(request):
     items = get_cart_items(request)
     total = cart_total(items)
+    idempotency_key = request.POST.get("idempotency_key") or uuid.uuid4().hex
 
     if request.method == "POST":
         shipping_address = request.POST.get("shipping_address", "").strip()
@@ -19,7 +22,16 @@ def checkout(request):
 
         if not shipping_address:
             messages.error(request, "A shipping address is required.")
-            return render(request, "orders/checkout.html", {"items": items, "total": total})
+            return render(
+                request,
+                "orders/checkout.html",
+                {"items": items, "total": total, "idempotency_key": idempotency_key},
+            )
+
+        existing = Order.objects.filter(user=request.user, idempotency_key=idempotency_key).first()
+        if existing:
+            messages.info(request, "Your order was already placed.")
+            return redirect("orders:detail", order_id=existing.id)
 
         try:
             order = services.checkout(
@@ -28,7 +40,11 @@ def checkout(request):
                 cart_items=items,
                 shipping_address=shipping_address,
                 payment_method=payment_method,
+                idempotency_key=idempotency_key,
             )
+        except services.DuplicateOrder as exc:
+            messages.info(request, "Your order was already placed.")
+            return redirect("orders:detail", order_id=exc.order.id)
         except services.EmptyCart:
             messages.error(request, "Your cart is empty.")
             return redirect("cart:view_cart")
@@ -39,7 +55,11 @@ def checkout(request):
         messages.success(request, "Order placed. Thanks for shopping with us!")
         return redirect("orders:detail", order_id=order.id)
 
-    return render(request, "orders/checkout.html", {"items": items, "total": total})
+    return render(
+        request,
+        "orders/checkout.html",
+        {"items": items, "total": total, "idempotency_key": idempotency_key},
+    )
 
 
 @login_required

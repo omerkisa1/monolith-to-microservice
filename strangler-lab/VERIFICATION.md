@@ -45,6 +45,7 @@ time of the fix pass: `f096ac5`.
 | C9 | Report endpoint starves browse traffic | PASS, with a worker-count caveat — see detail. Not re-run (unaffected by the fixes) |
 | D | Baseline numbers captured | DONE — split into `docs/BASELINE-REFERENCE.md` (these numbers) and a blank `docs/BASELINE.md` template — see Fixes applied |
 | E | README leak check | **RE-VERIFIED PASS** — `README.md` now exists and contains none of the flagged terms |
+| G1 | Checkout idempotency (duplicate-order prevention, task 15) | **PASS** — see Part G |
 
 ---
 
@@ -1219,3 +1220,99 @@ correctly no-ops when nothing is missing (confirmed in C2's re-run);
 - **Windows/macOS Docker Desktop behavior.** All testing was on native
   Linux Docker; resource-limit defaults and filesystem performance
   differ under Docker Desktop's VM layer and were not tested.
+
+---
+
+## Part G — Checkout idempotency (duplicate-order prevention, task 15)
+
+New work, added after the original audit and the fix pass. This is the
+first functional fix to application code in this repo, driven by the
+operator requirement *"Geçen sene bir gün siparişlerin bir kısmı iki
+kere işlendi, sebebini bulamadık. Bir daha olmasını istemiyorum."*
+(tasks.md:15) — not by a defect found in the audit itself.
+
+**Root cause confirmed by source reading (not re-verified by
+experiment, the mechanism is unambiguous):** `orders/views.py.checkout`
+had no idempotency token; `templates/orders/checkout.html` posted a
+plain form with no duplicate-submit guard; and `orders/services.py:51`
+created the `Order` row *before* the `select_for_update` stock locks at
+line 59, so two rapid identical POSTs each got their own `pending` row
+and flowed through to two `paid` orders with two fresh
+`txn_<uuid4>` payments. The `@transaction.atomic` decorator (A4) gives
+atomicity over the four tables, not deduplication.
+
+**Fix (defense in depth, three layers):**
+
+1. **Service/DB** — `Order.idempotency_key` (`CharField(64)`,
+   `unique=True`) added in `orders/migrations/0002_order_idempotency_key.py`
+   (`orders/models.py:22`). `checkout()` now takes `idempotency_key`;
+   the unique-index collision on the `Order.objects.create` inside a
+   nested savepoint is caught and surfaced as `DuplicateOrder` carrying
+   the already-existing order. If two POSTs race with the same key,
+   exactly one creates the order; the loser is answered with the
+   winner's order.
+2. **View** — `orders/views.py` generates a `uuid4().hex` key on GET
+   (kept stable across a form-error re-render), forwards it to
+   `checkout()`, and also short-circuits a replayed POST (same user +
+   same key) straight to the existing order's detail page. Catches
+   `DuplicateOrder` the same way.
+3. **Frontend** — `templates/orders/checkout.html` carries a hidden
+   `idempotency_key` input and disables the submit button on first
+   submit; a guard for accidental replay, not a security boundary.
+
+**Backward compatibility:** pre-existing orders were backfilled with
+`NULL` (multiple `NULL`s are legal under a Postgres unique index), so
+the 200,001 orders already in the DB were untouched:
+```
+docker compose exec web python manage.py shell -c "
+from django.db import connection
+with connection.cursor() as c:
+    c.execute(\"select count(*) from orders_order where idempotency_key is null\")
+    print('null_key_orders =', c.fetchone()[0])
+    c.execute(\"select count(*) from orders_order\")
+    print('total_orders =', c.fetchone()[0])
+    c.execute(\"select indexname from pg_indexes where tablename='orders_order' and indexname like '%idempotency%'\")
+    print('index =', c.fetchone())
+"
+```
+```
+null_key_orders = 200001
+total_orders = 200001
+index = ('orders_order_idempotency_key_key',)
+```
+
+**Persistent regression test (the actual check):** three cases live in
+`orders/tests.py` — a replayed key raises `DuplicateOrder` at the
+service layer and counts exactly one order; a duplicate-key POST
+redirects both requests to the same order at the view layer; two
+distinct keys still produce two distinct orders. Run:
+```
+docker compose exec web python manage.py test orders -v 1
+```
+```
+Creating test database for alias 'default'...
+Found 3 test(s).
+System check identified no issues (0 silenced).
+...
+----------------------------------------------------------------------
+Ran 3 tests in 0.257s
+
+OK
+Destroying test database for alias 'default'...
+```
+
+**Schema is committed and drift-free:**
+```
+docker compose exec web python manage.py makemigrations --check --dry-run
+```
+```
+No changes detected
+```
+
+**Verdict: PASS.** `orders/migrations/0002_order_idempotency_key.py` is
+committed, `makemigrations --check` reports no drift, the 200,001
+existing orders are intact with `NULL` keys, and the three tests pass
+on the live stack. Keyless replays (e.g. the k6 `loadtest/checkout.js`
+script, which never sends a key) still work — the view generates a
+fresh key per request, which is not a duplicate-guard but is unchanged
+behavior.

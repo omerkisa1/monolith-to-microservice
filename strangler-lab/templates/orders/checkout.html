@@ -17,8 +17,9 @@
     </table>
     <h2>Total: ${{ total }}</h2>
 
-    <form method="post" class="stacked">
+    <form method="post" class="stacked" id="checkout-form">
         {% csrf_token %}
+        <input type="hidden" name="idempotency_key" value="{{ idempotency_key }}">
         <label for="shipping_address">Shipping address</label>
         <textarea id="shipping_address" name="shipping_address" required></textarea>
 
@@ -30,4 +31,10 @@
 
         <button class="btn" type="submit">Place order</button>
     </form>
+
+    <script>
+        document.getElementById("checkout-form").addEventListener("submit", function (event) {
+            event.target.querySelector("button[type=submit]").disabled = true;
+        });
+    </script>
 {% endblock %}
