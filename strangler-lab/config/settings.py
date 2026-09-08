@@ -57,17 +57,17 @@ TEMPLATES = [
 ]
 
 WSGI_APPLICATION = "config.wsgi.application"
-
+import os
 # --- database -----------------------------------------------------------
 # Points at the "db" service in docker-compose.yml.
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.postgresql",
-        "NAME": "storefront",
-        "USER": "storefront",
-        "PASSWORD": "storefront_pw",
-        "HOST": "db",
-        "PORT": "5432",
+        "NAME": os.getenv("POSTGRES_DB", "storefront"),
+        "USER": os.getenv("POSTGRES_USER", "storefront"),
+        "PASSWORD": os.getenv("POSTGRES_PASSWORD", "storefront_pw"),
+        "HOST": os.getenv("POSTGRES_HOST", "db"),
+        "PORT": os.getenv("POSTGRES_PORT", "5432"),
     }
 }
 
