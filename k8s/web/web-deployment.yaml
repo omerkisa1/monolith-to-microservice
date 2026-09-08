@@ -1,0 +1,46 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: web
+  namespace: storefront
+spec:
+  replicas: 2
+
+  selector:
+    matchLabels:
+      app: web
+
+  template:
+    metadata:
+      labels:
+        app: web
+
+    spec:
+      containers:
+        - name: web
+          image: omerkisa1/mtom:1.0.0
+
+          ports:
+            - containerPort: 8000
+
+          env:
+            - name: POSTGRES_HOST
+              value: postgres-service
+
+          envFrom:
+            - secretRef:
+                name: postgres-secret
+
+          readinessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 5
+            periodSeconds: 5
+
+          livenessProbe:
+            httpGet:
+              path: /
+              port: 8000
+            initialDelaySeconds: 15
+            periodSeconds: 10
