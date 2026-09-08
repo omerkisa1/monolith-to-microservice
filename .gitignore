@@ -17,3 +17,4 @@ override.tf.json
 .terraformrc
 terraform.rc
 terraform/openstack-openrc.sh
+k8s/postgres/secret.yaml
