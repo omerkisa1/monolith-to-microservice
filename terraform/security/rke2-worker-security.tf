@@ -14,21 +14,21 @@ resource "openstack_compute_secgroup_v2" "worker_sg" {
     from_port   = 10250
     to_port     = 10250
     ip_protocol = "tcp"
-    cidr        = var.admin_cidr
+    cidr        = var.rke2_network_cidr
   }
 
   rule {
     from_port   = 8472
     to_port     = 8472
     ip_protocol = "udp"
-    cidr        = var.admin_cidr
+    cidr        = var.rke2_network_cidr
   }
 
   rule {
     from_port   = 9099
     to_port     = 9099
     ip_protocol = "tcp"
-    cidr        = var.admin_cidr
+    cidr        = var.rke2_network_cidr
   }
   rule {
     from_port   = 30080
