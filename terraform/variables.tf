@@ -26,10 +26,10 @@ variable "worker_count" {
 
 variable "ingress_http_nodeport" {
   type    = number
-  default = 30080
+  default = 80
 }
 
 variable "ingress_https_nodeport" {
   type    = number
-  default = 30443
+  default = 443
 }
