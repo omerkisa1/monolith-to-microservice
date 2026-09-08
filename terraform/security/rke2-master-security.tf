@@ -2,6 +2,13 @@ resource "openstack_compute_secgroup_v2" "master_sg" {
   name        = "master-sg"
   description = "RKE2 master node security group for mtom project"
 
+  rule {
+    from_port     = 22
+    to_port       = 22
+    ip_protocol   = "tcp"
+    from_group_id = openstack_compute_secgroup_v2.bastion_sg.id
+  }
+
   #Kubernetes API
   rule {
     from_port   = 6443

@@ -16,3 +16,4 @@ override.tf.json
 *.plan
 .terraformrc
 terraform.rc
+terraform/openstack-openrc.sh

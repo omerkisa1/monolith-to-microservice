@@ -4,10 +4,10 @@ resource "openstack_compute_secgroup_v2" "worker_sg" {
 
 
   rule {
-    from_port   = 22
-    to_port     = 22
-    ip_protocol = "tcp"
-    cidr        = var.admin_cidr
+    from_port     = 22
+    to_port       = 22
+    ip_protocol   = "tcp"
+    from_group_id = openstack_compute_secgroup_v2.bastion_sg.id
   }
 
   rule {
@@ -30,4 +30,18 @@ resource "openstack_compute_secgroup_v2" "worker_sg" {
     ip_protocol = "tcp"
     cidr        = var.admin_cidr
   }
+  rule {
+    from_port   = 30080
+    to_port     = 30080
+    ip_protocol = "tcp"
+    cidr        = var.rke2_network_cidr
+  }
+
+  rule {
+    from_port   = 30443
+    to_port     = 30443
+    ip_protocol = "tcp"
+    cidr        = var.rke2_network_cidr
+  }
+
 }
