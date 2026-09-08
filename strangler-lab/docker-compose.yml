@@ -64,6 +64,26 @@ services:
       redis:
         condition: service_healthy
 
+  backup:
+    image: postgres:16
+    volumes:
+      - backups:/backups
+      - ./scripts/backup.sh:/usr/local/bin/backup.sh:ro
+      - ./scripts/restore_verify.sh:/usr/local/bin/restore_verify.sh:ro
+    env_file:
+      - .env
+    entrypoint: >
+      /bin/sh -c "
+      apt-get update > /dev/null 2>&1 &&
+      apt-get install -y cron > /dev/null 2>&1 &&
+      echo '0 2 * * * /usr/local/bin/backup.sh >> /proc/1/fd/1 2>&1' | crontab - &&
+      echo 'Backup cron ready (0 2 * * *)' &&
+      cron -f
+      "
+    depends_on:
+      db:
+        condition: service_healthy
+
   nginx:
     image: nginx:1.25-alpine
     volumes:
@@ -99,3 +119,4 @@ volumes:
   media:
   logs:
   redisdata:
+  backups:
