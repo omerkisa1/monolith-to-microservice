@@ -2,7 +2,6 @@ resource "openstack_compute_secgroup_v2" "worker_sg" {
   name        = "worker-sg"
   description = "RKE2 worker node security group for mtom project"
 
-
   rule {
     from_port     = 22
     to_port       = 22
@@ -30,18 +29,18 @@ resource "openstack_compute_secgroup_v2" "worker_sg" {
     ip_protocol = "tcp"
     cidr        = var.rke2_network_cidr
   }
+
   rule {
-    from_port   = 30080
-    to_port     = 30080
+    from_port   = 80
+    to_port     = 80
     ip_protocol = "tcp"
     cidr        = var.rke2_network_cidr
   }
 
   rule {
-    from_port   = 30443
-    to_port     = 30443
+    from_port   = 443
+    to_port     = 443
     ip_protocol = "tcp"
     cidr        = var.rke2_network_cidr
   }
-
 }
