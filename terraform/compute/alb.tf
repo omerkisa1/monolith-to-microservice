@@ -10,6 +10,8 @@ resource "openstack_lb_listener_v2" "http_listener" {
   protocol_port   = 80
   loadbalancer_id = openstack_lb_loadbalancer_v2.application_lb.id
 
+  allowed_cidrs = [var.admin_cidr]
+
 }
 
 resource "openstack_lb_pool_v2" "http_pool" {
@@ -48,6 +50,8 @@ resource "openstack_lb_listener_v2" "https_listener" {
   protocol_port = 443
 
   loadbalancer_id = openstack_lb_loadbalancer_v2.application_lb.id
+
+  allowed_cidrs = [var.admin_cidr]
 }
 
 resource "openstack_lb_pool_v2" "https_pool" {
