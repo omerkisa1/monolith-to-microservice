@@ -1,10 +1,10 @@
 module "network" {
   source = "./network"
 
-  external_network_id     = var.external_network_id
+  external_network_id  = var.external_network_id
   bastion_network_cidr = var.bastion_network_cidr
-  rke2_network_cidr       = var.rke2_network_cidr
-  data_network_cidr       = var.data_network_cidr
+  rke2_network_cidr    = var.rke2_network_cidr
+  data_network_cidr    = var.data_network_cidr
 }
 
 module "keypair" {
@@ -20,9 +20,9 @@ module "security" {
 
   admin_cidr = var.admin_cidr
 
-  bastion_network_cidr    =  var.bastion_network_cidr
-  rke2_network_cidr       = var.rke2_network_cidr
-  data_network_cidr       = var.data_network_cidr
+  bastion_network_cidr = var.bastion_network_cidr
+  rke2_network_cidr    = var.rke2_network_cidr
+  data_network_cidr    = var.data_network_cidr
 }
 
 module "compute" {
@@ -31,16 +31,17 @@ module "compute" {
   ubuntu_image_id  = var.ubuntu_image_id
   nano_flavor_id   = var.nano_flavor_id
   medium_flavor_id = var.medium_flavor_id
+  admin_cidr       = var.admin_cidr
 
   master_count           = var.master_count
   worker_count           = var.worker_count
   ingress_http_nodeport  = var.ingress_http_nodeport
   ingress_https_nodeport = var.ingress_https_nodeport
 
-  bastion_network_id    = module.network.bastion_network_id
-  rke2_network_id       = module.network.rke2_network_id
-  rke2_subnet_id        = module.network.rke2_subnet_id
-  data_network_id       = module.network.data_network_id
+  bastion_network_id = module.network.bastion_network_id
+  rke2_network_id    = module.network.rke2_network_id
+  rke2_subnet_id     = module.network.rke2_subnet_id
+  data_network_id    = module.network.data_network_id
 
   external_network_name = module.network.external_network_name
 

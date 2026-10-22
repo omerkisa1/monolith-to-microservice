@@ -73,3 +73,5 @@ variable "db_sg_name" {
 variable "bastion_network_id" {
   type = string
 }
+
+variable "admin_cidr" { type = string }
